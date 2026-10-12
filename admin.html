@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#123b58" /><title>Admin | Mülakat</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar"><div class="topbar-inner"><div class="brand"><span class="brand-icon">M</span><span>Mülakat • Admin</span></div><div class="topbar-actions"><button id="refreshBtn" class="button ghost small">↻ Yenile</button><button id="logoutBtn" class="button outline small">Çıkış</button></div></div></header>
+  <main class="page">
+    <section class="hero"><div><div class="eyebrow light">YÖNETİM PANELİ</div><h1>Komisyon ve oturum yönetimi</h1><p>Slot ve komisyon bazında seçime açma/kapatma, tekil silme ve seçimleri temizleme işlemleri.</p></div><div id="adminIdentity" class="hero-identity">Yükleniyor…</div></section>
+    <section id="summary" class="stats-grid" aria-label="Genel durum"></section>
+    <section class="section-block">
+      <div class="section-heading"><div><span class="eyebrow">AYARLAR</span><h2>Genel seçim son tarihi</h2></div></div>
+      <div class="surface-card settings-box">
+        <p>Bu tarihten sonra yöneticiler yeni seçim yapamaz, seçimlerini değiştiremez veya iptal edemez. Admin yetkileri devam eder.</p>
+        <form id="deadlineForm" class="settings-form"><div><label for="deadlineInput">Türkiye tarihi ve saati</label><input type="datetime-local" id="deadlineInput" step="60" /></div><button class="button primary" type="submit">Son tarihi kaydet</button></form>
+        <p class="field-help">Alanı boş bırakıp kaydederseniz yönetici seçimleri kapalı kalır. Bir slotu açmak genel son tarih kuralını geçersiz kılmaz.</p>
+      </div>
+    </section>
+    <section class="section-block">
+      <div class="section-heading"><div><span class="eyebrow">OTURUM YÖNETİMİ</span><h2>Tarih ve komisyonlar</h2></div><div class="inline-filters"><input id="slotSearch" class="compact-input" type="date" aria-label="Tarihe göre filtrele" /><button id="clearFilterBtn" class="button ghost small">Filtreyi temizle</button></div></div>
+      <p class="section-subline">Seçimleri temizlemek, komisyonun veya slotun açık/kapalı ayarını değiştirmez. Birinci komisyon eksikse ikinciye yeni seçim yapılamaz.</p>
+      <div id="manageSlots"></div>
+    </section>
+    <section class="section-block" id="managerSummarySection">
+      <div class="section-heading"><div><span class="eyebrow">RAPORLAMA</span><h2>Yönetici bazında seçim özeti</h2></div><button id="exportBtn" class="button primary">Excel'e aktar (.xlsx)</button></div>
+      <div class="surface-card table-card"><div class="table-toolbar"><input type="search" id="managerSearch" placeholder="Kod veya yönetici adı ara…" aria-label="Kod veya ada göre filtrele" /></div><div class="table-wrap"><table><thead><tr><th>Kod</th><th>Yönetici</th><th>Tür</th><th>Oturum sayısı</th><th>Detay</th></tr></thead><tbody id="managerRows"></tbody></table></div><div id="managerDetail" class="manager-detail" hidden></div></div>
+      <p class="section-subline">Sayılar yalnızca güncel atamalardan hesaplanır. Kapalı slotlardaki mevcut atamalar da sayılır.</p>
+    </section>
+    <footer class="footer-note">Admin işlemleri genel seçim son tarihinden bağımsızdır. Saatler Türkiye saatidir.</footer>
+  </main>
+  <div id="busyOverlay" class="busy-overlay" hidden><div class="busy-panel"><div class="spinner"></div><p class="busy-label">İşlem yapılıyor…</p></div></div>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

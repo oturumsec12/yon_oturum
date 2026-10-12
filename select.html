@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#123b58" /><title>Oturum Seçimi | Mülakat</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-icon">M</span><span>Mülakat Oturum Seçimi</span></div>
+      <div class="topbar-actions"><button class="button ghost small" id="refreshBtn" type="button">↻ Yenile</button><button class="button outline small" id="logoutBtn" type="button">Çıkış</button></div>
+    </div>
+  </header>
+  <main class="page">
+    <section class="hero hero-manager">
+      <div><div class="eyebrow light">YÖNETİCİ PANELİ</div><h1>Uygun mülakat oturumlarını seçin</h1><p>İK ve Birim kontenjanları birbirinden bağımsızdır. İkinci komisyon, birinci komisyon dolduktan sonra açılır.</p></div>
+      <div id="userIdentity" class="hero-identity">Yükleniyor…</div>
+    </section>
+    <div class="deadline-banner" id="deadlineBanner">Son seçim tarihi yükleniyor…</div>
+    <section class="section-block" id="mySelectionSection">
+      <div class="section-heading"><div><span class="eyebrow">KİŞİSEL PLANINIZ</span><h2>Seçimlerim <span id="myCount" class="count-chip">0</span></h2></div><button class="button ghost small" id="cancelMoveBtn" hidden>Taşıma işlemini iptal et</button></div>
+      <div id="moveMessage" class="info-banner" hidden></div>
+      <div id="mySelections" class="selection-grid"></div>
+    </section>
+    <section class="section-block">
+      <div class="section-heading"><div><span class="eyebrow">TAKVİM</span><h2>Oturumlar</h2></div><div class="month-switch" id="monthSwitch"></div></div>
+      <p class="section-subline">Her tarih ve saat için kontenjanlar ayrı değerlendirilir. Değişiklikler yaklaşık 20 saniyede bir yenilenir.</p>
+      <div id="calendar"></div>
+    </section>
+    <footer class="footer-note">Tüm saatler Türkiye saatine (Europe/Istanbul) göredir.</footer>
+  </main>
+  <div id="busyOverlay" class="busy-overlay" hidden><div class="busy-panel"><div class="spinner"></div><p class="busy-label">İşlem yapılıyor…</p></div></div>
+  <script type="module" src="select.js"></script>
+</body>
+</html>

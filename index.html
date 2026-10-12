@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#123b58" />
+  <title>Giriş | Mülakat Oturum Seçimi</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <div class="brandmark" aria-hidden="true">M</div>
+    <div class="login-card surface-card">
+      <div class="eyebrow">MÜLAKAT PLANLAMA</div>
+      <h1>Oturum seçim sistemi</h1>
+      <p class="lead">Size verilen 5 karakterli kodla giriş yaparak mülakat oturumlarınızı görüntüleyebilir ve yönetebilirsiniz.</p>
+      <form id="loginForm">
+        <label for="accessCode">Giriş kodu</label>
+        <input id="accessCode" name="accessCode" type="text" placeholder="Örn. DRBMG"
+          autocomplete="off" autocapitalize="characters" spellcheck="false"
+          pattern="[A-Za-z0-9]{5}" minlength="5" maxlength="5" required />
+        <p class="field-help">Kodlar 5 harf/rakamdan oluşur.</p>
+        <button type="submit" class="button primary large full">Giriş yap <span aria-hidden="true">→</span></button>
+      </form>
+      <p id="loginError" class="form-error" role="alert" hidden></p>
+    </div>
+    <p class="login-foot">İnsan Kaynakları ve Birim Yöneticileri için mülakat takvimi</p>
+  </main>
+  <div id="busyOverlay" class="busy-overlay" hidden><div class="busy-panel"><div class="spinner"></div><p class="busy-label">Giriş yapılıyor…</p></div></div>
+  <script type="module" src="login.js"></script>
+</body>
+</html>
