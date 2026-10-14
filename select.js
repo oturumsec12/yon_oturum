@@ -1,6 +1,6 @@
 import {
   api, getToken, doLogout, setBusy, notify, esc, fmtDeadline,
-  activeWindow, firstComplete, dayGroups, describeRole, nextCommission,
+  activeWindow, commission, hasPlace, rolePriorityMet, dayGroups, describeRole, nextCommission,
 } from "./common.js";
 
 if (!getToken()) location.replace("index.html");
@@ -56,8 +56,16 @@ function stateOf(slot) {
   if (reason) return { type: "unavailable", label: "Şu an seçilemiyor", icon: "lock", reason };
   if (nextCommission(slot, state.actor.role, deadline)) return { type: "available", label: "Uygun", icon: "circle", reason: `${roleLabel(state.actor.role)} kontenjanı seçilebilir.` };
   if (slot.commissions.length && slot.commissions.every(c => c.ik_taken && c.birim_taken)) return { type: "full", label: "Tam dolu", icon: "full", reason: "Boş kontenjan bulunmuyor." };
-  const second = slot.commissions.find(c => Number(c.commission_no) === 2);
-  reason = second && !firstComplete(slot) ? "1. komisyon tamamlanmadığı için 2. komisyon yeni seçimlere kilitli." : `${roleLabel(state.actor.role)} türü için seçilebilir kontenjan bulunmuyor.`;
+  const role = state.actor.role;
+  const first = commission(slot, 1);
+  const second = commission(slot, 2);
+  if (first && !hasPlace(first, role) && !first.selection_enabled) {
+    reason = `1. komisyondaki ${roleLabel(role)} kontenjanı boş ve komisyon yeni seçimlere kapalı.`;
+  } else if (second?.selection_enabled && !hasPlace(second, role) && !rolePriorityMet(slot, second, role)) {
+    reason = `2. komisyondaki ${roleLabel(role)} kontenjanı için önce 1. komisyonda ${roleLabel(role)} seçimi yapılmalı.`;
+  } else {
+    reason = `${roleLabel(role)} türü için seçilebilir kontenjan bulunmuyor.`;
+  }
   return { type: "unavailable", label: "Şu an seçilemiyor", icon: "lock", reason };
 }
 function seat(c, role, candidate) {
@@ -76,10 +84,16 @@ function slotCard(slot) {
   else if (candidate && (!movingId || editable(movingChoice()))) action = `<button class="button primary" type="button" data-select="${esc(slot.id)}">${movingId ? "Buraya taşı" : "Oturumu seç"}${icons.arrow}</button>`;
   else action = `<button class="button" type="button" disabled>${status.type === "full" ? "Kontenjan dolu" : "Seçilemiyor"}</button>`;
   const rows = slot.commissions.map(c => {
-    const locked = Number(c.commission_no) === 2 && !firstComplete(slot);
+    const role = state.actor.role;
+    const locked = Number(c.commission_no) === 2 && !hasPlace(c, role) && !rolePriorityMet(slot, c, role);
     const reasons = [];
     if (!c.selection_enabled) reasons.push("Yeni seçimlere kapalı");
-    if (locked) reasons.push("Yeni seçime kilitli");
+    else if (locked && slot.selection_enabled && activeWindow(slot, state.settings.selection_deadline)) {
+      const first = commission(slot, 1);
+      reasons.push(first && !first.selection_enabled
+        ? `1. komisyonda ${roleLabel(role)} kontenjanı boş; komisyon kapalı`
+        : `1. komisyonda ${roleLabel(role)} seçimi bekleniyor`);
+    }
     return `<tr data-commission-id="${esc(c.id)}"${reasons.length ? ' class="waiting"' : ""}><td>${reasons.length ? `<span class="row-lock">${icons.lock}${Number(c.commission_no)}. komisyon</span><small class="row-reason">${reasons.join(" · ")}</small>` : `${Number(c.commission_no)}. komisyon`}</td><td>${seat(c, "IK", candidate)}</td><td>${seat(c, "BIRIM", candidate)}</td></tr>`;
   }).join("");
   return `<article class="slot ${status.type}" data-slot-id="${esc(slot.id)}" aria-label="${esc(`${slotLabel(slot)}, ${status.label}. ${status.reason}`)}">

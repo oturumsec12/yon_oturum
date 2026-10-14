@@ -110,14 +110,22 @@ export function firstComplete(slot) {
   const first = commission(slot, 1);
   return Boolean(first?.ik_taken && first?.birim_taken);
 }
+// İK ve Birim sırası bağımsızdır; ilk komisyonun diğer paydaşı beklenmez.
+export function rolePriorityMet(slot, c, role) {
+  if (!c || !["IK", "BIRIM"].includes(role)) return false;
+  if (Number(c.commission_no) === 1) return true;
+  return Number(c.commission_no) === 2 && Number(slot.max_commissions) === 2 && hasPlace(commission(slot, 1), role);
+}
+// Doluluk ve seçim izinleri içindir; zaman penceresi çağıran ekran tarafından kontrol edilir.
+export function canAssignRole(slot, c, role) {
+  return Boolean(slot.selection_enabled && c?.selection_enabled && rolePriorityMet(slot, c, role) && !hasPlace(c, role));
+}
 export function nextCommission(slot, role, deadline) {
   if (!slot.selection_enabled || !activeWindow(slot, deadline)) return null;
   const c1 = commission(slot, 1);
-  if (c1?.selection_enabled && !hasPlace(c1, role)) return c1;
-  if (Number(slot.max_commissions) === 2 && firstComplete(slot)) {
-    const c2 = commission(slot, 2);
-    if (c2?.selection_enabled && !hasPlace(c2, role)) return c2;
-  }
+  if (canAssignRole(slot, c1, role)) return c1;
+  const c2 = commission(slot, 2);
+  if (canAssignRole(slot, c2, role)) return c2;
   return null;
 }
 export async function doLogout() {

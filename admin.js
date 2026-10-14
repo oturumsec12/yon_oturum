@@ -1,6 +1,6 @@
 import {
   api, getToken, doLogout, setBusy, notify, esc, fmtDate, fmtShortDate,
-  toIstanbulInput, dayGroups, firstComplete, slotStart,
+  toIstanbulInput, dayGroups, commission, hasPlace, rolePriorityMet, canAssignRole, slotStart,
 } from "./common.js";
 import { downloadWorkbook } from "./excel.js";
 
@@ -21,7 +21,6 @@ const hour = value => String(value || "").slice(0, 5);
 const roleLabel = role => role === "IK" ? "İK" : "Birim";
 const slotLabel = slot => `${fmtShortDate(slot.slot_date)} · ${hour(slot.start_time)}–${hour(slot.end_time)}`;
 const isFull = c => Boolean(c.ik_taken && c.birim_taken);
-const isLocked = (slot, c) => Number(c.commission_no) === 2 && !firstComplete(slot);
 
 function acceptState(data) {
   if (data.actor?.kind !== "ADMIN") { location.replace("select.html"); return false; }
@@ -39,11 +38,12 @@ function timeOpen(slot) {
   return Boolean(deadline) && now < Date.parse(deadline) && now < slotStart(slot).getTime();
 }
 function canReceive(slot, c) {
-  return timeOpen(slot) && slot.selection_enabled && c.selection_enabled && !isLocked(slot, c) && !isFull(c);
+  return timeOpen(slot) && ["IK", "BIRIM"].some(role => canAssignRole(slot, c, role));
 }
 function commissionStatus(slot, c) {
-  if (!timeOpen(slot) || !slot.selection_enabled || !c.selection_enabled || isLocked(slot, c)) return "unavailable";
-  return isFull(c) ? "full" : "available";
+  if (!timeOpen(slot) || !slot.selection_enabled || !c.selection_enabled) return "unavailable";
+  if (isFull(c)) return "full";
+  return canReceive(slot, c) ? "available" : "unavailable";
 }
 function slotStatus(slot) {
   if (!timeOpen(slot) || !slot.selection_enabled) return "unavailable";
@@ -75,19 +75,25 @@ function renderSummary() {
 }
 function renderAdminCommission(slot, c, people) {
   const assignments = c.assignments || [];
-  const locked = isLocked(slot, c);
+  const waitingRoles = timeOpen(slot) && slot.selection_enabled && c.selection_enabled
+    ? ["IK", "BIRIM"].filter(role => !hasPlace(c, role) && !rolePriorityMet(slot, c, role)) : [];
+  const locked = waitingRoles.length > 0 && !canReceive(slot, c);
   const seats = ["IK", "BIRIM"].map(role => {
     const a = assignments.find(x => x.role === role);
     const person = a ? people.get(a.manager_id) : null;
+    const first = commission(slot, 1);
+    const waitNote = waitingRoles.includes(role) ? (first && !first.selection_enabled
+      ? `1. komisyonda ${roleLabel(role)} kontenjanı boş; komisyon kapalı`
+      : `1. komisyonda ${roleLabel(role)} seçimi bekleniyor`) : "";
     return `<div class="assignment"><span class="role-label">${role === "IK" ? "İK kontenjanı" : "Birim Kontenjanı"}</span>
       <strong class="seat ${a ? "taken" : "free"}">${a ? "● Dolu" : "○ Boş"}</strong>
+      ${waitNote ? `<p class="lock-note">${esc(waitNote)}</p>` : ""}
       ${person ? `<div class="assignment-person"><span class="manager-code">${esc(person.code)}</span><span class="name">${esc(person.full_name)}</span></div>` : ""}
       ${a ? `<button type="button" class="button small danger" data-delete="${esc(a.id)}" aria-label="${esc(person?.code || roleLabel(role))} atamasını ${esc(slotLabel(slot))}, ${esc(c.commission_no)}. komisyondan sil">Sil</button>` : ""}</div>`;
   }).join("");
   return `<section class="commission${c.selection_enabled ? "" : " disabled"}${locked ? " locked" : ""}" data-commission-id="${esc(c.id)}">
     <div class="commission-head"><h4>${esc(c.commission_no)}. Komisyon</h4>${badge(commissionStatus(slot, c))}</div>
     <p class="commission-permission"><strong>${canReceive(slot, c) ? "Komisyon seçime açık" : "Komisyon seçime kapalı"}</strong></p>
-    ${locked ? '<p class="lock-note">1. komisyonun dolması bekleniyor</p>' : ""}
     <div class="assignment-grid">${seats}</div>
     <div class="commission-actions"><button type="button" class="button small" data-toggle-commission="${esc(c.id)}">${c.selection_enabled ? "Komisyonu kapat" : "Komisyonu aç"}</button>
       <button type="button" class="button small danger" data-clear="${esc(c.id)}" ${assignments.length ? "" : "disabled"}>Seçimleri temizle</button></div>
