@@ -1,6 +1,6 @@
 /**
  * Ek bağımlılık gerektirmeyen, gerçek .xlsx (Office Open XML) üreticisi.
- * 3 çalışma sayfası destekler; ZIP dosyası DEFLATE yerine STORE biçiminde yazılır.
+ * ZIP dosyası DEFLATE yerine STORE biçiminde yazılır.
  * Tüm hücreler Unicode inline string veya sayı olarak saklanır.
  */
 const encode = new TextEncoder();
@@ -26,7 +26,7 @@ function sheetXml(rows) {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
     `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<dimension ref="A1:${end}"/><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>` +
-    `<sheetFormatPr defaultRowHeight="17"/><cols>${Array.from({length:maxColumns},(_,i) => `<col min="${i+1}" max="${i+1}" width="${i===0?20:24}" customWidth="1"/>`).join("")}</cols>` +
+    `<sheetFormatPr defaultRowHeight="17"/><cols>${Array.from({length:maxColumns},(_,i) => `<col min="${i+1}" max="${i+1}" width="${[20,64,18][i] || 24}" customWidth="1"/>`).join("")}</cols>` +
     `<sheetData>${body}</sheetData><autoFilter ref="A1:${end}"/></worksheet>`;
 }
 // CRC32 ve ZIP yapısını üçüncü parti servis veya CDN olmadan oluştur.
@@ -99,12 +99,13 @@ export function workbook(sheets) {
     `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font>` +
     `<font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/></font></fonts>` +
-    `<fills count="2"><fill><patternFill patternType="none"/></fill>` +
-    `<fill><patternFill patternType="solid"><fgColor rgb="FF123B58"/><bgColor indexed="64"/></patternFill></fill></fills>` +
+    `<fills count="3"><fill><patternFill patternType="none"/></fill>` +
+    `<fill><patternFill patternType="gray125"/></fill>` +
+    `<fill><patternFill patternType="solid"><fgColor rgb="FFC00000"/><bgColor indexed="64"/></patternFill></fill></fills>` +
     `<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>` +
     `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
     `<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>` +
-    `<xf numFmtId="0" fontId="1" fillId="1" borderId="0" xfId="0" applyFill="1" applyFont="1"/></cellXfs>` +
+    `<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFill="1" applyFont="1"/></cellXfs>` +
     `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>` +
     `</styleSheet>`;
   const files = [
